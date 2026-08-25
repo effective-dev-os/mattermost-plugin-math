@@ -1,7 +1,7 @@
 {
     "id": "dev.effective.math",
     "name": "Math",
-    "description": "Evaluate math expressions when @math-bot is mentioned in a channel message.",
+    "description": "Evaluate math expressions when @math is mentioned in a channel message.",
     "homepage_url": "https://github.com/effective-dev-os/mattermost-plugin-math",
     "support_url": "https://github.com/effective-dev-os/mattermost-plugin-math/issues",
     "icon_path": "assets/math-icon.svg",

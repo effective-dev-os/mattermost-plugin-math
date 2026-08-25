@@ -56,7 +56,7 @@ func (p *Plugin) OnActivate() error {
 
 	botUserID, err := p.client.Bot.EnsureBot(&model.Bot{
 		Username:    botUsername,
-		DisplayName: "Math Bot",
+		DisplayName: "Math",
 		Description: "Posts results for @math mentions.",
 	})
 	if err != nil {

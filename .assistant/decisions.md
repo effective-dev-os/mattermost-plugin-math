@@ -123,3 +123,12 @@ Three options were escalated to the user (leading-only, leading-or-trailing, any
 **Source:** direct user instruction, this session.
 **Closes:** none new.
 **Supersedes:** the reply-placement and bot-username portions of D-005 (D-005's mention-extraction-scope decision — leading-or-trailing only, Option B — and its guard chain / error-non-ephemeral rationale are unchanged and remain in effect).
+
+## D-008 — Bot display name changed to "Math"
+
+**Date:** 2026-08-25
+**Status:** accepted
+**Decision:** `server/plugin.go`'s `EnsureBot` call's `DisplayName` changed from `"Math Bot"` to `"Math"`. Username (`math`, per D-007), avatar, description, and registration mechanism unchanged. Pre-release, no migration needed — `EnsureBot` updates the existing `math` account's display name idempotently on next activation.
+**Source:** direct user instruction, this session.
+**Closes:** none new.
+**Supersedes:** the `DisplayName` portion of D-004/D-007.
