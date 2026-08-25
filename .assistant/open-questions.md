@@ -16,6 +16,6 @@ Raised during `/pre-feature` for the bot-post feature: `github.com/mattermost/ma
 
 **Addendum 2026-08-25:** Confirmed still holds under D-005 (the `/math` slash command → `@math-bot` mention-hook pivot). The new `MessageHasBeenPosted` hook's own documented floor is server 5.2, well under the existing `7.1.0` — no version bump needed, no reopen.
 
-## OQ-004 — OPEN: `CLAUDE.md` still describes the removed `/math <expression>` slash-command syntax
+## OQ-004 — RESOLVED: `CLAUDE.md` updated to describe the `@math-bot` mention trigger
 
-`CLAUDE.md`'s intro paragraph (line 3) was not updated when D-005 replaced the `/math` slash command with the `@math-bot` mention trigger, because the harness's `self-config-guard` `PreToolUse` hook (`.claude/hooks/self-config-guard.sh`) blocks `Edit`/`Write` on `CLAUDE.md`/`AGENTS.md`/`.claude/*` in any project with a `.harness-lock` present — by design, to prevent governing-config drift as a side effect of a feature task. This is a genuine, known gap (not a silent oversight): `CLAUDE.md` line 3 needs a deliberate human edit or a `/sync` run to bring it in line with `README.md` and `.memory-bank/product-overview/vision.md`, both of which were already updated. Full rationale: `.assistant/decisions.md` D-005.
+`self-config-guard` was removed from `.claude/hooks/` by the user (2026-08-25), which unblocked a direct human-directed edit. `CLAUDE.md` line 3 now matches `README.md` and `.memory-bank/product-overview/vision.md`.
