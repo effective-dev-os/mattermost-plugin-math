@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -15,12 +14,15 @@ import (
 	"github.com/mattermost/mattermost/server/public/pluginapi/cluster"
 	"github.com/pkg/errors"
 
-	"github.com/effective-dev-os/mattermost-plugin-math/server/command"
 	"github.com/effective-dev-os/mattermost-plugin-math/server/store/kvstore"
 )
 
 // botIconPath is the bundle-relative path to the math bot's profile image.
 const botIconPath = "assets/math-bot-icon.png"
+
+// botUsername is the username of the math bot account, and the mention trigger
+// that addresses it in channel messages.
+const botUsername = "math-bot"
 
 // Plugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
 type Plugin struct {
@@ -34,9 +36,6 @@ type Plugin struct {
 
 	// botUserID is the user id of the bot account used to post /math results.
 	botUserID string
-
-	// commandClient is the client used to register and execute slash commands.
-	commandClient command.Command
 
 	// router is the HTTP router for handling API requests.
 	router *mux.Router
@@ -56,9 +55,9 @@ func (p *Plugin) OnActivate() error {
 	p.client = pluginapi.NewClient(p.API, p.Driver)
 
 	botUserID, err := p.client.Bot.EnsureBot(&model.Bot{
-		Username:    "math-bot",
+		Username:    botUsername,
 		DisplayName: "Math Bot",
-		Description: "Posts results for the /math slash command.",
+		Description: "Posts results for @math-bot mentions.",
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to ensure math bot account")
@@ -70,8 +69,6 @@ func (p *Plugin) OnActivate() error {
 	}
 
 	p.kvstore = kvstore.NewKVStore(p.client)
-
-	p.commandClient = command.NewCommandHandler(p.client, p.botUserID)
 
 	p.router = p.initRouter()
 
@@ -118,15 +115,6 @@ func (p *Plugin) OnDeactivate() error {
 		}
 	}
 	return nil
-}
-
-// This will execute the commands that were registered in the NewCommandHandler function.
-func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
-	response, err := p.commandClient.Handle(args)
-	if err != nil {
-		return nil, model.NewAppError("ExecuteCommand", "plugin.command.execute_command.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-	return response, nil
 }
 
 // See https://developers.mattermost.com/extend/plugins/server/reference/

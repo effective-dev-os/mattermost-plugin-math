@@ -1,6 +1,6 @@
 # Mattermost Math Plugin
 
-A Mattermost plugin adding a `/math <expression>` slash command that evaluates the expression and posts the formatted result back into the channel.
+A Mattermost plugin that evaluates a math expression when you mention `@math-bot` in a channel message (e.g. `@math-bot 2 + 2` or `2 + 2 @math-bot`) and posts the result as a threaded reply.
 
 To learn more about plugins, see [our plugin documentation](https://developers.mattermost.com/extend/plugins/).
 
@@ -54,10 +54,6 @@ The server code comes with some boilerplate for creating an api, using slash com
 #### Api
 
 api.go implements the ServeHTTP hook which allows the plugin to implement the http.Handler interface. Requests destined for the `/plugins/{id}` path will be routed to the plugin. This file also contains a sample `HelloWorld` endpoint that is tested in plugin_test.go.
-
-#### Command package
-
-This package contains the boilerplate for adding a slash command and an instance of it is created in the `OnActivate` hook in plugin.go. If you don't need it you can delete the package and remove any reference to `commandClient` in plugin.go. The package also contains an example of how to create a mock for testing.
 
 #### KVStore package
 
