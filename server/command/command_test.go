@@ -37,12 +37,14 @@ func registerMathCommand(env *env) {
 	env.api.On("LogDebug", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
 }
 
+const testBotUserID = "bot-user-id"
+
 func TestMathCommandRegistration(t *testing.T) {
 	assert := assert.New(t)
 	env := setupTest()
 
 	registerMathCommand(env)
-	cmdHandler := NewCommandHandler(env.client)
+	cmdHandler := NewCommandHandler(env.client, testBotUserID)
 	assert.NotNil(cmdHandler)
 	env.api.AssertExpectations(t)
 }
@@ -65,15 +67,20 @@ func TestMathCommandSuccess(t *testing.T) {
 			assert := assert.New(t)
 			env := setupTest()
 			registerMathCommand(env)
-			cmdHandler := NewCommandHandler(env.client)
+			cmdHandler := NewCommandHandler(env.client, testBotUserID)
 
-			args := &model.CommandArgs{Command: tt.command}
+			args := &model.CommandArgs{Command: tt.command, ChannelId: "channel-id", RootId: "root-id"}
+			env.api.On("CreatePost", mock.MatchedBy(func(post *model.Post) bool {
+				return post.UserId == testBotUserID &&
+					post.ChannelId == args.ChannelId &&
+					post.RootId == args.RootId &&
+					post.Message == tt.wantText
+			})).Return(&model.Post{}, nil)
+
 			response, err := cmdHandler.Handle(args)
 			assert.Nil(err)
-			assert.Equal(tt.wantText, response.Text)
-			if tt.wantInChan {
-				assert.Equal(model.CommandResponseTypeInChannel, response.ResponseType)
-			}
+			assert.Equal(&model.CommandResponse{}, response)
+			env.api.AssertExpectations(t)
 		})
 	}
 }
@@ -95,7 +102,7 @@ func TestMathCommandErrors(t *testing.T) {
 			assert := assert.New(t)
 			env := setupTest()
 			registerMathCommand(env)
-			cmdHandler := NewCommandHandler(env.client)
+			cmdHandler := NewCommandHandler(env.client, testBotUserID)
 
 			args := &model.CommandArgs{Command: tt.command}
 			response, err := cmdHandler.Handle(args)
@@ -110,7 +117,7 @@ func TestUnknownCommand(t *testing.T) {
 	assert := assert.New(t)
 	env := setupTest()
 	registerMathCommand(env)
-	cmdHandler := NewCommandHandler(env.client)
+	cmdHandler := NewCommandHandler(env.client, testBotUserID)
 
 	args := &model.CommandArgs{Command: "/unknown foo"}
 	response, err := cmdHandler.Handle(args)

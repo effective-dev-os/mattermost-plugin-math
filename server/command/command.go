@@ -12,7 +12,8 @@ import (
 )
 
 type Handler struct {
-	client *pluginapi.Client
+	client    *pluginapi.Client
+	botUserID string
 }
 
 type Command interface {
@@ -22,7 +23,7 @@ type Command interface {
 const mathCommandTrigger = "math"
 
 // Register all your slash commands in the NewCommandHandler function.
-func NewCommandHandler(client *pluginapi.Client) Command {
+func NewCommandHandler(client *pluginapi.Client, botUserID string) Command {
 	err := client.SlashCommand.Register(&model.Command{
 		Trigger:          mathCommandTrigger,
 		AutoComplete:     true,
@@ -34,7 +35,8 @@ func NewCommandHandler(client *pluginapi.Client) Command {
 		client.Log.Error("Failed to register command", "error", err)
 	}
 	return &Handler{
-		client: client,
+		client:    client,
+		botUserID: botUserID,
 	}
 }
 
@@ -71,10 +73,21 @@ func (c *Handler) executeMathCommand(args *model.CommandArgs) *model.CommandResp
 		}
 	}
 
-	return &model.CommandResponse{
-		ResponseType: model.CommandResponseTypeInChannel,
-		Text:         fmt.Sprintf("`%s` = `%s`", expression, mathexpr.FormatResult(result)),
+	post := &model.Post{
+		UserId:    c.botUserID,
+		ChannelId: args.ChannelId,
+		RootId:    args.RootId,
+		Message:   fmt.Sprintf("`%s` = `%s`", expression, mathexpr.FormatResult(result)),
 	}
+	if err := c.client.Post.CreatePost(post); err != nil {
+		c.client.Log.Error("Failed to post math command result", "error", err)
+		return &model.CommandResponse{
+			ResponseType: model.CommandResponseTypeEphemeral,
+			Text:         "Could not post the result.",
+		}
+	}
+
+	return &model.CommandResponse{}
 }
 
 func mathErrorMessage(err error) string {
