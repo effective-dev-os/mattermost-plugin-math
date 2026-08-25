@@ -1,10 +1,10 @@
 {
-    "id": "com.mattermost.plugin-starter-template",
-    "name": "Plugin Starter Template",
-    "description": "This plugin serves as a starting point for writing a Mattermost plugin.",
-    "homepage_url": "https://github.com/mattermost/mattermost-plugin-starter-template",
-    "support_url": "https://github.com/mattermost/mattermost-plugin-starter-template/issues",
-    "icon_path": "assets/starter-template-icon.svg",
+    "id": "dev.effective.math",
+    "name": "Math",
+    "description": "Evaluate math expressions with the /math slash command.",
+    "homepage_url": "https://github.com/effective-dev-os/mattermost-plugin-math",
+    "support_url": "https://github.com/effective-dev-os/mattermost-plugin-math/issues",
+    "icon_path": "assets/math-icon.svg",
     "min_server_version": "6.2.1",
     "server": {
         "executables": {
