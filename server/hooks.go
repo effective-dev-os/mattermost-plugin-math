@@ -16,12 +16,13 @@ import (
 
 // mentionUsernameChars is Mattermost's username charset, used to tell a genuine
 // @botUsername mention apart from a longer username that merely starts or ends
-// with it (e.g. "@math-bot2" must not match).
+// with it (e.g. "@math2" must not match).
 const mentionUsernameChars = "abcdefghijklmnopqrstuvwxyz0123456789._-"
 
-// MessageHasBeenPosted reacts to @math-bot mentions in ordinary channel messages,
-// evaluates the expression via the mathexpr package, and replies as a threaded post
-// authored by the bot account.
+// MessageHasBeenPosted reacts to @math mentions in ordinary channel messages,
+// evaluates the expression via the mathexpr package, and replies from the bot
+// account — in the channel for a top-level mention, or in the thread if the
+// mention was itself posted inside one.
 func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 	expression, ok := extractMathMention(post.Message, botUsername)
 	if !ok {
@@ -41,13 +42,12 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		return
 	}
 
+	// Reply in the same thread if the mention was posted in one, otherwise post directly
+	// in the channel (no new thread) — matches where the triggering message itself lives.
 	rootID := post.RootId
-	if rootID == "" {
-		rootID = post.Id
-	}
 
 	if expression == "" {
-		p.postMathReply(post.ChannelId, rootID, "Mention me with a math expression, e.g. `@math-bot 2 + 2`.")
+		p.postMathReply(post.ChannelId, rootID, "Mention me with a math expression, e.g. `@math 2 + 2`.")
 		return
 	}
 
@@ -61,7 +61,8 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 	p.postMathReply(post.ChannelId, rootID, fmt.Sprintf("`%s` = `%s`", expression, mathexpr.FormatResult(result)))
 }
 
-// postMathReply posts message as a threaded reply from the bot account.
+// postMathReply posts message from the bot account, threaded under rootID if set
+// (empty rootID posts directly in the channel).
 func (p *Plugin) postMathReply(channelID, rootID, message string) {
 	post := &model.Post{
 		UserId:    p.botUserID,
@@ -77,8 +78,8 @@ func (p *Plugin) postMathReply(channelID, rootID, message string) {
 // extractMathMention reports whether msg addresses botUsername as its first or last
 // token (case-insensitive, word-boundary aware of Mattermost's username charset). A
 // mention anywhere else in the message does not match: stripping a mid-message mention
-// produces silently wrong results (e.g. "sqrt @math-bot (4)" would evaluate to 2) or
-// unparseable ones (e.g. "2+2 @math-bot 3+3"), so only the two unambiguous anchor
+// produces silently wrong results (e.g. "sqrt @math (4)" would evaluate to 2) or
+// unparseable ones (e.g. "2+2 @math 3+3"), so only the two unambiguous anchor
 // positions are supported (see decisions.md D-005). On a match, it returns the
 // remaining text with the mention removed, trimmed, as the expression to evaluate
 // (empty if the message was just the mention).

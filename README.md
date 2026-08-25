@@ -1,6 +1,6 @@
 # Mattermost Math Plugin
 
-A Mattermost plugin that evaluates a math expression when you mention `@math-bot` in a channel message (e.g. `@math-bot 2 + 2` or `2 + 2 @math-bot`) and posts the result as a threaded reply.
+A Mattermost plugin that evaluates a math expression when you mention `@math` in a channel message (e.g. `@math 2 + 2` or `2 + 2 @math`) and posts the result in the channel (or in the thread, if mentioned inside one).
 
 To learn more about plugins, see [our plugin documentation](https://developers.mattermost.com/extend/plugins/).
 

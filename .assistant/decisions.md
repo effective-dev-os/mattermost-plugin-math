@@ -109,3 +109,17 @@ Three options were escalated to the user (leading-only, leading-or-trailing, any
 **Scope:** this override applies to branch/commit mechanics only (skip feature branches, commit straight to `master`). It does NOT relax any other INVARIANT — §10's ban on force-push, `--no-verify`, and `git reset --hard` without explicit confirmation still applies in full; §6's 30-day re-verify, §9's confidence flags, and all other hard rules are unaffected.
 **Source:** direct user instruction, this session. Recorded here (rather than editing `AGENTS.md`) because `.claude/hooks/self-config-guard.sh` blocks direct edits to `AGENTS.md`/`CLAUDE.md`/`.claude/*` by design (D-005 hit the same guard for `CLAUDE.md`); `.assistant/decisions.md` is the append-only, guard-exempt place for project-specific policy overrides per INVARIANT §4's own exception list. Every `/pipeline`-style task's Step 1 context-gathering reads this file and must treat this entry as the standing branch/commit policy going forward, superseding the harness-default assumption.
 **Closes:** none new.
+
+## D-007 — Reply placement follows the mention's own thread state; bot username changed to `math`
+
+**Date:** 2026-08-25
+**Status:** accepted
+**Decision:** Two direct, small user-directed changes to the `@math` mention feature (D-005), both implemented without a fresh `/pre-feature` consilium — bounded, unambiguous, no architectural fork:
+
+1. **Reply placement.** `server/hooks.go`'s `postMathReply` root-id logic changed from D-005's unconditional threading (`rootID := post.RootId; if rootID == "" { rootID = post.Id }` — every reply, even to a top-level message, was posted as a new thread under it) to simply `rootID := post.RootId` (empty stays empty). Effect: a top-level `@math ...` message gets a plain reply in the channel (no thread created); a `@math ...` message that is itself already a thread reply gets its reply in that same thread. This was previously verified (D-005) that `post.Id` unconditionally would 400 on already-threaded messages — that finding is irrelevant now since `post.Id` is no longer used as a fallback at all.
+2. **Bot username.** Changed from `math-bot` to `math` (`server/plugin.go`'s `botUsername` const) — display name stays "Math Bot", avatar/description/`EnsureBot` registration mechanism unchanged. No migration path implemented or needed: the plugin has not been released, so there is no installed server with a `math-bot` account to reconcile. `EnsureBot` will simply create a fresh `math` bot account on first activation post-change. Mention trigger is now `@math` instead of `@math-bot` throughout code, tests, and docs.
+
+**Verification:** `gofmt`, `go build ./...`, `go vet ./...`, `go test ./...` all pass. Deployed to the live local Mattermost test server and confirmed: a top-level `@math 2+2` posts a plain channel reply (no thread), a reply-to-a-thread `@math 2+2` posts within that same thread, and the bot account now shows as `@math` with the existing avatar.
+**Source:** direct user instruction, this session.
+**Closes:** none new.
+**Supersedes:** the reply-placement and bot-username portions of D-005 (D-005's mention-extraction-scope decision — leading-or-trailing only, Option B — and its guard chain / error-non-ephemeral rationale are unchanged and remain in effect).

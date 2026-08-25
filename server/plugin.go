@@ -22,7 +22,7 @@ const botIconPath = "assets/math-bot-icon.png"
 
 // botUsername is the username of the math bot account, and the mention trigger
 // that addresses it in channel messages.
-const botUsername = "math-bot"
+const botUsername = "math"
 
 // Plugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
 type Plugin struct {
@@ -57,7 +57,7 @@ func (p *Plugin) OnActivate() error {
 	botUserID, err := p.client.Bot.EnsureBot(&model.Bot{
 		Username:    botUsername,
 		DisplayName: "Math Bot",
-		Description: "Posts results for @math-bot mentions.",
+		Description: "Posts results for @math mentions.",
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to ensure math bot account")
