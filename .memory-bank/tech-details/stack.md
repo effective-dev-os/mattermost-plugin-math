@@ -9,6 +9,10 @@
 - **Build:** `Makefile`, Node v16 / npm v8 pinned via `.nvmrc`
 - **Plugin id:** `dev.effective.math`
 
-## TODO
+## /math slash command — implementation details
 
-- Document server↔webapp slash-command wiring conventions once implemented
+- **Server-only slash command**, registered in `server/command/command.go` via `client.SlashCommand.Register` inside `NewCommandHandler` (called from `OnActivate` in `server/plugin.go`). No webapp-side registration or UI needed.
+- **Expression evaluation:** new `server/mathexpr` package (zero Mattermost imports, pure functions), handles normalization (`×`/`÷`/unicode minus → ASCII, comma → decimal point, implicit multiplication, percent-rewrite), then `expr.Compile`/`Run`.
+- **Input cap:** 1024 runes (via `utf8.RuneCountInString`), enforced before `expr.Compile`. Rejects input before normalization for accurate cap (not post-normalization, since some normalization steps emit extra characters).
+- **Trig/log conventions:** `sin`/`cos` accept degrees (converted to radians before `math.Sin`/`math.Cos`), `log` is base-10 (`math.Log10`), both matching calculator user expectations per D-002 rationale.
+- **Percent normalization:** every `%` occurrence is rewritten as `(operand/100)` regardless of position, removing expr-lang's integer-modulo operator from user-facing input. `50% + 10` → `(50/100) + 10` = 0.5. Pipeline order: length cap → unicode symbols → comma decimals → percent rewrite → implicit multiplication → character allowlist.

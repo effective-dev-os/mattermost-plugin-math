@@ -3,6 +3,7 @@ module github.com/effective-dev-os/mattermost-plugin-math
 go 1.25
 
 require (
+	github.com/expr-lang/expr v1.17.8
 	github.com/gorilla/mux v1.8.1
 	github.com/mattermost/mattermost/server/public v0.1.21
 	github.com/pkg/errors v0.9.1
